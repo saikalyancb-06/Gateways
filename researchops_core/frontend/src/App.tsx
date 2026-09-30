@@ -5,9 +5,9 @@ import {
   Play, RefreshCw, Brain, Activity, ShieldCheck,
   Users, Scale, ChevronRight, Zap, Cloud,
   FileText, Link2, CheckCircle, ExternalLink,
-  ShieldAlert, Award, Network, History, GitBranch,
+  ShieldAlert, Network, History, GitBranch,
   BarChart3, HelpCircle, Printer, Download, Copy, Check,
-  Database, Compass, AlertTriangle
+  Database, Compass, AlertTriangle, Sliders, Presentation
 } from 'lucide-react';
 import type { AgentInfo, AgentMessage, Claim, Source, CourtSimulation, AppTab } from './types';
 import { EvidenceGraph } from './EvidenceGraph';
@@ -16,6 +16,9 @@ import { CounterfactualLab } from './CounterfactualLab';
 import { ResearchAutopsy } from './ResearchAutopsy';
 import { ResearchMemory } from './ResearchMemory';
 import { AutonomousPlanner } from './AutonomousPlanner';
+import { EvidenceCourt } from './EvidenceCourt';
+import { UnitEconomicsEngine } from './UnitEconomicsEngine';
+import { PresentationDeck } from './PresentationDeck';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<AppTab>('planner');
@@ -274,6 +277,8 @@ export default function App() {
           { id: 'lab',      icon: <GitBranch size={14} />, label: '7. Counterfactual Lab' },
           { id: 'autopsy',  icon: <ShieldAlert size={14} />, label: '8. Research Autopsy' },
           { id: 'memory',   icon: <Database size={14} />, label: '9. Research Memory' },
+          { id: 'economics', icon: <Sliders size={14} />, label: '10. Unit Economics' },
+          { id: 'deck',     icon: <Presentation size={14} />, label: '11. Slide Deck (PPT)' },
         ] as const).map(t => (
           <button 
             key={t.id} 
@@ -1027,134 +1032,15 @@ export default function App() {
 
         {/* ──────────────── TAB 4: EVIDENCE COURT ──────────────── */}
         {activeTab === 'court' && (
-          <div style={{ flex: 1, padding: '32px 56px', overflowY: 'auto', backgroundColor: '#0B1120' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '28px', flexWrap: 'wrap', gap: '12px', borderBottom: '1px solid #1E293B', paddingBottom: '16px' }}>
-              <div>
-                <h2 style={{ fontSize: '1.65rem', fontWeight: 800, color: '#F8FAFC', margin: 0 }}>Evidence Court — Adversarial Arbitration</h2>
-                <p style={{ fontSize: '0.88rem', color: '#94A3B8', margin: '4px 0 0' }}>Trial simulation where Prosecution and Defense cross-examine market assumptions before the Judge.</p>
-              </div>
-              <button 
-                onClick={handleRunCourt} 
-                disabled={isCourtRunning}
-                style={{
-                  padding: '10px 22px', backgroundColor: isCourtRunning ? '#475569' : '#DC2626', color: '#FFF',
-                  fontWeight: 700, fontSize: '0.88rem', borderRadius: '7px', border: 'none', cursor: isCourtRunning ? 'not-allowed' : 'pointer',
-                  display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 14px rgba(220,38,38,.35)'
-                }}
-              >
-                <Scale size={18} />
-                {isCourtRunning ? 'Court in Session…' : 'Simulate Court Hearing'}
-              </button>
-            </div>
-
-            {claims.length > 0 && (
-              <div style={{ marginBottom: '20px', backgroundColor: '#131D31', border: '1px solid #1E293B', borderRadius: '8px', padding: '16px 20px' }}>
-                <div style={{ fontSize: '0.74rem', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px' }}>Select Claim to Adjudicate:</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '200px', overflowY: 'auto' }}>
-                  {claims.map((c, idx) => (
-                    <div
-                      key={c.id || idx}
-                      onClick={() => setSelectedCourtClaimIdx(idx)}
-                      style={{
-                        padding: '10px 14px',
-                        backgroundColor: selectedCourtClaimIdx === idx ? '#1E3A8A' : '#0F172A',
-                        border: `1px solid ${selectedCourtClaimIdx === idx ? '#3B82F6' : '#1E293B'}`,
-                        borderRadius: '6px', cursor: 'pointer',
-                        fontSize: '0.84rem', color: selectedCourtClaimIdx === idx ? '#93C5FD' : '#CBD5E1',
-                        lineHeight: '1.4'
-                      }}
-                    >
-                      <span style={{ fontWeight: 700, color: selectedCourtClaimIdx === idx ? '#60A5FA' : '#38BDF8', marginRight: '8px' }}>#{idx + 1}</span>
-                      {c.text}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {courtData ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '1000px', margin: '0 auto' }}>
-                
-                {/* Active Trial Status Bar */}
-                <div style={{ backgroundColor: '#131D31', padding: '12px 20px', borderRadius: '8px', border: '1px solid #1E293B', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.86rem' }}>
-                    <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: isCourtRunning ? '#F59E0B' : '#10B981' }} />
-                    <strong style={{ color: '#F8FAFC' }}>
-                      {isCourtRunning ? `Court in Session (Turn ${visibleCourtSteps} of ${courtData.dialogue.length})` : 'Trial Concluded — Final Judgment Rendered'}
-                    </strong>
-                  </div>
-                  <div style={{ fontSize: '0.78rem', color: '#94A3B8' }}>
-                    Adversarial Evidentiary Cross-Examination
-                  </div>
-                </div>
-
-                {/* To-and-fro Dynamic Transcript */}
-                {courtData.dialogue.slice(0, visibleCourtSteps).map((d, i) => {
-                  const isJudge = d.role === 'JUDGE';
-                  const isProsecution = d.role === 'PROSECUTION';
-                  const isDefense = d.role === 'DEFENSE';
-                  const clr = isProsecution ? '#EF4444' : isDefense ? '#10B981' : isJudge ? '#F59E0B' : '#38BDF8';
-                  
-                  return (
-                    <div 
-                      key={i} 
-                      style={{ 
-                        backgroundColor: '#0F172A', 
-                        borderTop: '1px solid #1E293B',
-                        borderRight: '1px solid #1E293B',
-                        borderBottom: '1px solid #1E293B',
-                        borderLeft: `5px solid ${clr}`, 
-                        borderRadius: '0 10px 10px 0', 
-                        padding: '18px 24px', 
-                        boxShadow: isJudge && i === courtData.dialogue.length - 1 ? '0 0 20px rgba(245, 158, 11, 0.2)' : '0 4px 12px rgba(0,0,0,0.3)',
-                        transition: 'all 0.3s ease'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <strong style={{ fontSize: '0.92rem', color: clr, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            {isJudge && <Award size={16} />}
-                            {isProsecution && <ShieldAlert size={16} />}
-                            {isDefense && <ShieldCheck size={16} />}
-                            {d.speaker}
-                          </strong>
-                          <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '2px 7px', borderRadius: '4px', backgroundColor: `${clr}22`, color: clr, border: `1px solid ${clr}44` }}>
-                            {d.role}
-                          </span>
-                        </div>
-                        <span style={{ fontSize: '0.74rem', color: '#64748B' }}>{d.timestamp}</span>
-                      </div>
-                      <div style={{ fontSize: '0.94rem', color: isJudge ? '#FEF08A' : '#E2E8F0', lineHeight: '1.65' }}>
-                        {d.statement}
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {/* Final Verdict Callout when session completes */}
-                {!isCourtRunning && visibleCourtSteps >= courtData.dialogue.length && courtData.ruling && (
-                  <div style={{ backgroundColor: 'rgba(245, 158, 11, 0.1)', border: '2px solid #F59E0B', borderRadius: '10px', padding: '20px 24px', marginTop: '10px', display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-                    <Scale size={28} color="#F59E0B" style={{ flexShrink: 0, marginTop: '2px' }} />
-                    <div>
-                      <div style={{ fontWeight: 800, fontSize: '1rem', color: '#FBBF24', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        Official Judicial Ruling &amp; Binding Caveat
-                      </div>
-                      <div style={{ fontSize: '0.92rem', color: '#FDE68A', lineHeight: '1.6' }}>
-                        {courtData.ruling}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-              </div>
-            ) : (
-              <div style={{ backgroundColor: '#131D31', padding: '60px', borderRadius: '10px', textAlign: 'center', color: '#64748B', maxWidth: '800px', margin: '40px auto' }}>
-                <Scale size={48} color="#334155" style={{ margin: '0 auto 16px' }} />
-                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#CBD5E1', marginBottom: '8px' }}>Simulate Adversarial Arbitration</div>
-                <div style={{ fontSize: '0.88rem', color: '#64748B', marginBottom: '20px' }}>Click <strong>Simulate Court Hearing</strong> to cross-examine claims before the Presiding Judge.</div>
-              </div>
-            )}
-          </div>
+          <EvidenceCourt
+            claims={claims}
+            selectedClaimIdx={selectedCourtClaimIdx}
+            onSelectClaimIdx={(idx) => setSelectedCourtClaimIdx(idx)}
+            courtData={courtData}
+            visibleSteps={visibleCourtSteps}
+            isCourtRunning={isCourtRunning}
+            onRunCourt={handleRunCourt}
+          />
         )}
 
         {/* ──────────────── TAB 5: EVIDENCE GRAPH ──────────────── */}
@@ -1188,10 +1074,10 @@ export default function App() {
             agents={agents}
             messages={messages}
             finalReport={finalReport}
-            onTraceInGraph={(_claimId) => {
+            onTraceInGraph={(_claimId: string) => {
               setActiveTab('graph');
             }}
-            onNavigateTab={(t) => setActiveTab(t)}
+            onNavigateTab={(t: AppTab) => setActiveTab(t)}
           />
         )}
 
@@ -1201,6 +1087,22 @@ export default function App() {
             question={question}
             currentClaims={claims}
             onNavigateTab={(tab) => setActiveTab(tab)}
+          />
+        )}
+
+        {/* ──────────────── TAB 10: UNIT ECONOMICS & SENSITIVITY ENGINE ──────────────── */}
+        {activeTab === 'economics' && (
+          <UnitEconomicsEngine
+            claims={claims}
+            onNavigateTab={(tab) => setActiveTab(tab as any)}
+          />
+        )}
+
+        {/* ──────────────── TAB 11: EXECUTIVE PRESENTATION DECK (PPT) ──────────────── */}
+        {activeTab === 'deck' && (
+          <PresentationDeck
+            claims={claims}
+            question={question}
           />
         )}
 

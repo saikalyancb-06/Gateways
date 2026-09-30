@@ -106,5 +106,7 @@ export type AppTab =
   | 'replay'
   | 'lab'
   | 'autopsy'
-  | 'memory';
+  | 'memory'
+  | 'economics'
+  | 'deck';
 

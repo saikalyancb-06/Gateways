@@ -221,6 +221,23 @@ def run_court(req: RunCourtRequest):
     )
     return court_res.dict()
 
+from fastapi.responses import StreamingResponse
+
+class PresentationExportRequest(BaseModel):
+    question: str = "Quick Commerce & Loyalty Subscription Economics in India"
+    claim_count: int = 4
+    source_count: int = 12
+
+@app.post("/api/presentation/export")
+def export_presentation(req: PresentationExportRequest = PresentationExportRequest()):
+    from researchops_core.backend.presentation.generator import create_executive_deck
+    buf = create_executive_deck(question=req.question, claim_count=req.claim_count, source_count=req.source_count)
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        headers={"Content-Disposition": "attachment; filename=researchops_executive_presentation.pptx"}
+    )
+
 @app.websocket("/ws/research/{session_id}")
 async def websocket_endpoint(websocket: WebSocket, session_id: str):
     await websocket.accept()

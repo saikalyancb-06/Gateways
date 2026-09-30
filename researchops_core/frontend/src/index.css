@@ -237,3 +237,20 @@ html, body, #root {
   }
 }
 
+/* Podcast Visualizer & On-Air Animations */
+@keyframes pulseOnAir {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(1.18); }
+}
+
+@keyframes glowOnAir {
+  0%, 100% { box-shadow: 0 0 12px rgba(239, 68, 68, 0.45); }
+  50% { box-shadow: 0 0 24px rgba(239, 68, 68, 0.85); }
+}
+
+@keyframes eqBar1 { 0%, 100% { height: 4px; } 50% { height: 22px; } }
+@keyframes eqBar2 { 0%, 100% { height: 16px; } 50% { height: 6px; } }
+@keyframes eqBar3 { 0%, 100% { height: 8px; } 50% { height: 26px; } }
+@keyframes eqBar4 { 0%, 100% { height: 20px; } 50% { height: 10px; } }
+@keyframes eqBar5 { 0%, 100% { height: 6px; } 50% { height: 24px; } }
+

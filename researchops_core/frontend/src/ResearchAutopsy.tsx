@@ -1,9 +1,10 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import {
   ShieldAlert, RefreshCw,
   Search,
   Sparkles, History, Users, Check,
-  Sliders, Play, Info, Terminal, BookOpen, Network
+  Sliders, Play, Info, Terminal, BookOpen, Network,
+  Volume2, VolumeX, Pause, Radio, RotateCcw, Award, ShieldCheck, SkipForward, SkipBack
 } from 'lucide-react';
 import type { Claim, Source, AgentInfo, AgentMessage, AppTab } from './types';
 import type {
@@ -22,6 +23,38 @@ interface ResearchAutopsyProps {
   finalReport?: string;
   onTraceInGraph?: (claimId: string) => void;
   onNavigateTab?: (tab: AppTab) => void;
+}
+
+// Synthesize authentic wooden court gavel sound using Web Audio API
+function playGavelSound(strikes = 2) {
+  try {
+    const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    const strike = (timeOffset: number, volume = 0.5) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(155, ctx.currentTime + timeOffset);
+      osc.frequency.exponentialRampToValueAtTime(42, ctx.currentTime + timeOffset + 0.12);
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(850, ctx.currentTime + timeOffset);
+      filter.frequency.exponentialRampToValueAtTime(110, ctx.currentTime + timeOffset + 0.12);
+      gain.gain.setValueAtTime(volume, ctx.currentTime + timeOffset);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + timeOffset + 0.14);
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + timeOffset);
+      osc.stop(ctx.currentTime + timeOffset + 0.15);
+    };
+    strike(0, 0.65);
+    if (strikes >= 2) strike(0.18, 0.5);
+    if (strikes >= 3) strike(0.36, 0.55);
+  } catch (err) {
+    console.warn('AudioContext not allowed or not supported:', err);
+  }
 }
 
 export function ResearchAutopsy({
@@ -46,11 +79,166 @@ export function ResearchAutopsy({
   const [currentOperation, setCurrentOperation] = useState('Testing evidence-to-claim alignment...');
 
   // Active Findings, Filter, and Selection States
-  const [activeSubView, setActiveSubView] = useState<'dashboard' | 'report' | 'replay' | 'followup' | 'disagreements'>('dashboard');
+  const [activeSubView, setActiveSubView] = useState<'dashboard' | 'report' | 'replay' | 'followup' | 'disagreements' | 'debate'>('dashboard');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
   const [severityFilter, setSeverityFilter] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFindingId, setSelectedFindingId] = useState<string>('FND-001');
+
+  // Synthesized Voice Debate State
+  const [isDebatePlaying, setIsDebatePlaying] = useState<boolean>(false);
+  const [debateStep, setDebateStep] = useState<number>(0);
+  const [debateSpeed, setDebateSpeed] = useState<number>(1.0);
+  const [isDebateMuted, setIsDebateMuted] = useState<boolean>(false);
+  const [activeDebateSpeaker, setActiveDebateSpeaker] = useState<number | null>(null);
+  const debateSynthRef = useRef<SpeechSynthesis | null>(null);
+  const debateTurnRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      debateSynthRef.current = window.speechSynthesis;
+    }
+    return () => {
+      if (debateSynthRef.current) debateSynthRef.current.cancel();
+    };
+  }, []);
+
+  const autopsyDebateTurns = useMemo(() => [
+    {
+      step: 1,
+      speaker: 'Presiding Judge Sharma',
+      role: 'JUDGE',
+      persona: 'Authoritative, balanced voice delivering caveats',
+      statement: 'Order in the Autopsy Chamber! The Court convenes a forensic cross-examination of the critical audit findings. Prosecution and Defense shall examine whether the research conclusions survive the identified evidence gaps. Clerk, record the docket.',
+      time: '18:12:05'
+    },
+    {
+      step: 2,
+      speaker: 'Prosecution Agent Vance',
+      role: 'PROSECUTION',
+      persona: 'Skeptical, rigorous voice',
+      statement: 'Your Honor, Finding FND-001 reveals fatal vulnerability: the team accepted a 2.8x order lift assumption without verified willingness-to-pay data after subsidies end. If customers churn upon paying real delivery fees, the entire financial thesis collapses into negative contribution!',
+      time: '18:12:14'
+    },
+    {
+      step: 3,
+      speaker: 'Defense Agent Mehta',
+      role: 'DEFENSE',
+      persona: 'Optimistic, growth-focused voice',
+      statement: 'Objection! The audit ignores empirical cohort baseline resilience. Pilot tracking across Tier-1 metros proves a 42% retention floor. Furthermore, merchant co-funding agreements contribute 15% rebates that fully amortize acquisition overheads within 90 days. The growth compounding is verified!',
+      time: '18:12:28'
+    },
+    {
+      step: 4,
+      speaker: 'Prosecution Agent Vance',
+      role: 'PROSECUTION',
+      persona: 'Skeptical, rigorous voice',
+      statement: 'Compounding growth is an illusion when statutory compliance fails! Finding FND-002 proves DPDP Act 2023 consent gaps. Processing granular geolocation and order histories without verifiable consent triggers penalties up to ₹250 Crore. No corporate model survives that existential downside!',
+      time: '18:12:42'
+    },
+    {
+      step: 5,
+      speaker: 'Defense Agent Mehta',
+      role: 'DEFENSE',
+      persona: 'Optimistic, growth-focused voice',
+      statement: 'Which is why automated consent management is an operational milestone in Phase 1, not an insurmountable barrier. With LTV at ₹2,140 and disciplined ₹249 basket thresholds, unit contribution remains strongly positive. The business model generates robust long-term enterprise value!',
+      time: '18:12:56'
+    },
+    {
+      step: 6,
+      speaker: 'Presiding Judge Sharma',
+      role: 'JUDGE',
+      persona: 'Authoritative, balanced voice delivering caveats',
+      statement: 'The Court has synthesized the evidence audit. While the defense demonstrates commercial viability under disciplined execution, the prosecution has proven that unconstrained subsidies and regulatory neglect are unacceptable. The Court rules: AUTOPSY FINDINGS RATIFIED WITH BINDING CAVEATS. Rollout permitted ONLY with dynamic ₹249 basket floors and mandatory quarterly consent audits. Court is adjourned!',
+      time: '18:13:12'
+    }
+  ], []);
+
+  const stopDebate = () => {
+    if (debateSynthRef.current) debateSynthRef.current.cancel();
+    setIsDebatePlaying(false);
+    setActiveDebateSpeaker(null);
+  };
+
+  const speakDebateTurn = (turnIndex: number, autoAdvance = true) => {
+    if (!debateSynthRef.current || !autopsyDebateTurns[turnIndex]) {
+      stopDebate();
+      return;
+    }
+    debateSynthRef.current.cancel();
+
+    if (isDebateMuted) {
+      if (autoAdvance && turnIndex + 1 < autopsyDebateTurns.length) {
+        setTimeout(() => {
+          setDebateStep(turnIndex + 1);
+          speakDebateTurn(turnIndex + 1, true);
+        }, 1200 / debateSpeed);
+      } else {
+        stopDebate();
+      }
+      return;
+    }
+
+    const turn = autopsyDebateTurns[turnIndex];
+    const textToSpeak = `${turn.speaker}: ${turn.statement.replace(/₹/g, ' rupees ')}`;
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+
+    const voices = debateSynthRef.current.getVoices().filter(v => v.lang.startsWith('en'));
+
+    if (turn.role === 'JUDGE') {
+      utterance.pitch = 0.84;
+      utterance.rate = debateSpeed * 0.94;
+      const maleVoice = voices.find(v => v.name.toLowerCase().includes('david') || v.name.toLowerCase().includes('male'));
+      if (maleVoice) utterance.voice = maleVoice;
+      if (turnIndex === 0 || turnIndex === autopsyDebateTurns.length - 1) playGavelSound(turnIndex === 0 ? 3 : 2);
+    } else if (turn.role === 'PROSECUTION') {
+      utterance.pitch = 0.96;
+      utterance.rate = debateSpeed * 1.08;
+      const prosVoice = voices.find(v => v.name.toLowerCase().includes('guy') || v.name.toLowerCase().includes('mark'));
+      if (prosVoice) utterance.voice = prosVoice;
+    } else {
+      utterance.pitch = 1.14;
+      utterance.rate = debateSpeed * 0.98;
+      const defVoice = voices.find(v => v.name.toLowerCase().includes('zira') || v.name.toLowerCase().includes('female'));
+      if (defVoice) utterance.voice = defVoice;
+    }
+
+    utterance.onstart = () => {
+      setActiveDebateSpeaker(turnIndex);
+      setDebateStep(turnIndex);
+      if (debateTurnRefs.current[turnIndex]) {
+        debateTurnRefs.current[turnIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    };
+
+    utterance.onend = () => {
+      if (autoAdvance && turnIndex + 1 < autopsyDebateTurns.length) {
+        setTimeout(() => {
+          if (debateSynthRef.current && isDebatePlaying) {
+            setDebateStep(turnIndex + 1);
+            speakDebateTurn(turnIndex + 1, true);
+          }
+        }, 400);
+      } else {
+        if (turnIndex === autopsyDebateTurns.length - 1) playGavelSound(2);
+        stopDebate();
+      }
+    };
+
+    utterance.onerror = () => stopDebate();
+    debateSynthRef.current.speak(utterance);
+  };
+
+  const handleToggleDebate = () => {
+    if (isDebatePlaying) {
+      stopDebate();
+    } else {
+      setIsDebatePlaying(true);
+      const start = activeDebateSpeaker !== null ? activeDebateSpeaker : 0;
+      setDebateStep(start);
+      speakDebateTurn(start, true);
+    }
+  };
 
   // Proposed revision modal state
   const [revisionFinding, setRevisionFinding] = useState<AutopsyFinding | null>(null);
@@ -67,10 +255,10 @@ export function ResearchAutopsy({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question: question || 'Is an AI-powered customer-support copilot viable for small healthcare clinics in India?',
-          claims: claims.map(c => ({ id: c.id, text: c.text, type: c.type, status: c.status, confidence: c.confidence })),
-          sources: sources.map(s => ({ id: s.id, title: s.title, publisher: s.publisher, url: s.url })),
-          agents: agents.map(a => ({ id: a.id, name: a.name, role: a.role })),
-          messages: messages.slice(0, 15).map(m => ({ id: m.id, sender: m.sender, summary: m.summary, content: m.content })),
+          claims: claims.map((c: Claim) => ({ id: c.id, text: c.text, type: c.type, status: c.status, confidence: c.confidence })),
+          sources: sources.map((s: Source) => ({ id: s.id, title: s.title, publisher: s.publisher, url: s.url })),
+          agents: agents.map((a: AgentInfo) => ({ id: a.id, name: a.name, role: a.role })),
+          messages: messages.slice(0, 15).map((m: AgentMessage) => ({ id: m.id, sender: m.sender, summary: m.summary, content: m.content })),
           final_report: finalReport,
           mode,
           version
@@ -423,6 +611,7 @@ export function ResearchAutopsy({
           { id: 'followup', label: `Follow-up Research Queue (${session?.followup_tasks.length || 4})`, icon: <Sparkles size={14} /> },
           { id: 'disagreements', label: `Auditor Disputes (${session?.disagreements.length || 2})`, icon: <Users size={14} /> },
           { id: 'replay', label: 'Autopsy Replay Trail', icon: <History size={14} /> },
+          { id: 'debate', label: '🎙️ Synthesized Voice Debate', icon: <Volume2 size={14} /> },
         ].map(st => (
           <button
             key={st.id}
@@ -941,6 +1130,371 @@ export function ResearchAutopsy({
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* ──────────────── SUB-VIEW 6: SYNTHESIZED VOICE DEBATE ──────────────── */}
+      {activeSubView === 'debate' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '1060px', margin: '0 auto', width: '100%' }}>
+
+          {/* 🎙️ DEBATE AUDIO PLAYER DECK */}
+          <div style={{
+            backgroundColor: '#0E1729',
+            border: '1px solid #1E3A8A',
+            borderRadius: '12px',
+            padding: '18px 24px',
+            boxShadow: '0 8px 30px rgba(0, 0, 0, 0.45)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '14px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
+              
+              {/* Show Header */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #1E3A8A, #7C3AED)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#FFF',
+                  boxShadow: '0 0 16px rgba(124, 58, 237, 0.4)'
+                }}>
+                  <Radio size={22} />
+                </div>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#A78BFA' }}>
+                      ResearchOps Audio Chamber
+                    </span>
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      fontSize: '0.65rem',
+                      fontWeight: 700,
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      backgroundColor: isDebatePlaying ? 'rgba(239, 68, 68, 0.2)' : 'rgba(100, 116, 139, 0.2)',
+                      color: isDebatePlaying ? '#EF4444' : '#94A3B8',
+                      border: `1px solid ${isDebatePlaying ? 'rgba(239, 68, 68, 0.4)' : '#334155'}`
+                    }}>
+                      <span style={{
+                        width: '6px',
+                        height: '6px',
+                        borderRadius: '50%',
+                        backgroundColor: isDebatePlaying ? '#EF4444' : '#64748B',
+                        animation: isDebatePlaying ? 'pulseOnAir 1.2s infinite' : 'none'
+                      }} />
+                      {isDebatePlaying ? 'ON AIR' : 'DEBATE READY'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '1rem', fontWeight: 800, color: '#F8FAFC', marginTop: '2px' }}>
+                    Synthesized Forensic Debate: Auditing Evidence Gaps &amp; Epistemic Debt
+                  </div>
+                </div>
+              </div>
+
+              {/* Equalizer Wave Animation */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '3px', height: '28px', padding: '0 12px' }}>
+                {[1, 3, 5, 2, 4, 1, 5, 3, 2, 4, 3, 5, 2, 4].map((lvl, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      width: '3px',
+                      backgroundColor: isDebatePlaying ? '#A78BFA' : '#334155',
+                      borderRadius: '2px',
+                      height: isDebatePlaying ? `${Math.min(24, lvl * 4 + 4)}px` : '4px',
+                      animation: isDebatePlaying ? `eqBar${(idx % 5) + 1} 0.8s ease-in-out infinite alternate` : 'none',
+                      transition: 'height 0.2s ease'
+                    }}
+                  />
+                ))}
+              </div>
+
+              {/* Controls */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button
+                  onClick={() => {
+                    if (debateStep > 0) {
+                      const prev = debateStep - 1;
+                      setDebateStep(prev);
+                      if (isDebatePlaying) speakDebateTurn(prev, true);
+                    }
+                  }}
+                  disabled={debateStep <= 0}
+                  style={{
+                    padding: '8px', backgroundColor: '#1E293B', border: '1px solid #334155',
+                    borderRadius: '6px', color: debateStep <= 0 ? '#475569' : '#CBD5E1',
+                    cursor: debateStep <= 0 ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  <SkipBack size={15} />
+                </button>
+
+                <button
+                  onClick={handleToggleDebate}
+                  style={{
+                    padding: '9px 20px',
+                    background: isDebatePlaying
+                      ? 'linear-gradient(135deg, #EF4444, #DC2626)'
+                      : 'linear-gradient(135deg, #7C3AED, #2563EB)',
+                    color: '#FFF',
+                    fontWeight: 700,
+                    fontSize: '0.86rem',
+                    borderRadius: '7px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    boxShadow: isDebatePlaying
+                      ? '0 0 16px rgba(239, 68, 68, 0.45)'
+                      : '0 0 16px rgba(124, 58, 237, 0.45)'
+                  }}
+                >
+                  {isDebatePlaying ? <Pause size={17} /> : <Play size={17} />}
+                  {isDebatePlaying ? 'Pause Audio Debate' : 'Play Synthesized Debate'}
+                </button>
+
+                <button
+                  onClick={() => {
+                    if (debateStep < autopsyDebateTurns.length - 1) {
+                      const next = debateStep + 1;
+                      setDebateStep(next);
+                      if (isDebatePlaying) speakDebateTurn(next, true);
+                    }
+                  }}
+                  disabled={debateStep >= autopsyDebateTurns.length - 1}
+                  style={{
+                    padding: '8px', backgroundColor: '#1E293B', border: '1px solid #334155',
+                    borderRadius: '6px', color: debateStep >= autopsyDebateTurns.length - 1 ? '#475569' : '#CBD5E1',
+                    cursor: debateStep >= autopsyDebateTurns.length - 1 ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  <SkipForward size={15} />
+                </button>
+
+                <button
+                  onClick={() => {
+                    playGavelSound(2);
+                    setDebateStep(0);
+                    setIsDebatePlaying(true);
+                    speakDebateTurn(0, true);
+                  }}
+                  title="Replay from Opening"
+                  style={{
+                    padding: '8px', backgroundColor: '#1E293B', border: '1px solid #334155',
+                    borderRadius: '6px', color: '#94A3B8', cursor: 'pointer'
+                  }}
+                >
+                  <RotateCcw size={15} />
+                </button>
+
+                {/* Speed Selector */}
+                <div style={{ display: 'flex', backgroundColor: '#131D31', borderRadius: '6px', padding: '2px', border: '1px solid #1E293B' }}>
+                  {[1.0, 1.25, 1.5].map((spd) => (
+                    <button
+                      key={spd}
+                      onClick={() => setDebateSpeed(spd)}
+                      style={{
+                        padding: '4px 8px', fontSize: '0.72rem', fontWeight: 700,
+                        backgroundColor: debateSpeed === spd ? '#7C3AED' : 'transparent',
+                        color: debateSpeed === spd ? '#FFF' : '#94A3B8',
+                        border: 'none', borderRadius: '4px', cursor: 'pointer'
+                      }}
+                    >
+                      {spd}x
+                    </button>
+                  ))}
+                </div>
+
+                {/* Mute Toggle */}
+                <button
+                  onClick={() => setIsDebateMuted(!isDebateMuted)}
+                  style={{
+                    padding: '8px', backgroundColor: '#1E293B', border: '1px solid #334155',
+                    borderRadius: '6px', color: isDebateMuted ? '#EF4444' : '#94A3B8', cursor: 'pointer'
+                  }}
+                >
+                  {isDebateMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Currently Speaking Sub-banner */}
+            {autopsyDebateTurns[debateStep] && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                backgroundColor: '#070D19',
+                padding: '8px 14px',
+                borderRadius: '6px',
+                fontSize: '0.78rem',
+                border: '1px solid #16233B'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: '#64748B' }}>Active Voice:</span>
+                  <strong style={{
+                    color: autopsyDebateTurns[debateStep].role === 'JUDGE' ? '#F59E0B'
+                      : autopsyDebateTurns[debateStep].role === 'PROSECUTION' ? '#EF4444' : '#10B981'
+                  }}>
+                    {autopsyDebateTurns[debateStep].speaker}
+                  </strong>
+                  <span style={{ fontSize: '0.7rem', color: '#94A3B8' }}>
+                    ({autopsyDebateTurns[debateStep].persona})
+                  </span>
+                </div>
+                <div style={{ color: '#64748B' }}>
+                  Turn {debateStep + 1} of {autopsyDebateTurns.length}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 3 AGENT PERSONA CARDS */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>
+            {/* Persona 1: Prosecution */}
+            <div style={{ backgroundColor: '#0F172A', border: '1px solid #DC2626', borderRadius: '10px', padding: '16px 18px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <span style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: 'rgba(239, 68, 68, 0.2)', color: '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ShieldAlert size={16} />
+                </span>
+                <div>
+                  <div style={{ fontSize: '0.88rem', fontWeight: 800, color: '#EF4444' }}>Prosecution Agent</div>
+                  <div style={{ fontSize: '0.72rem', color: '#F87171' }}>Skeptical, Rigorous Voice</div>
+                </div>
+              </div>
+              <p style={{ fontSize: '0.78rem', color: '#CBD5E1', lineHeight: '1.45', margin: 0 }}>
+                Aggressively stress-tests evidence gaps, missing willingness-to-pay benchmarks, and statutory DPDP compliance penalties.
+              </p>
+            </div>
+
+            {/* Persona 2: Defense */}
+            <div style={{ backgroundColor: '#0F172A', border: '1px solid #059669', borderRadius: '10px', padding: '16px 18px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <span style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: 'rgba(16, 185, 129, 0.2)', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ShieldCheck size={16} />
+                </span>
+                <div>
+                  <div style={{ fontSize: '0.88rem', fontWeight: 800, color: '#10B981' }}>Defense Agent</div>
+                  <div style={{ fontSize: '0.72rem', color: '#34D399' }}>Optimistic, Growth-Focused Voice</div>
+                </div>
+              </div>
+              <p style={{ fontSize: '0.78rem', color: '#CBD5E1', lineHeight: '1.45', margin: 0 }}>
+                Defends empirical retention floors, merchant co-funded rebate economics, LTV compounding, and operational offsets.
+              </p>
+            </div>
+
+            {/* Persona 3: Judge */}
+            <div style={{ backgroundColor: '#0F172A', border: '1px solid #D97706', borderRadius: '10px', padding: '16px 18px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <span style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: 'rgba(245, 158, 11, 0.2)', color: '#F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Award size={16} />
+                </span>
+                <div>
+                  <div style={{ fontSize: '0.88rem', fontWeight: 800, color: '#F59E0B' }}>Presiding Judge</div>
+                  <div style={{ fontSize: '0.72rem', color: '#FBBF24' }}>Authoritative, Balanced Voice</div>
+                </div>
+              </div>
+              <p style={{ fontSize: '0.78rem', color: '#CBD5E1', lineHeight: '1.45', margin: 0 }}>
+                Synthesizes forensic evidence, strikes unverified speculation, and renders binding judicial decrees and caveats.
+              </p>
+            </div>
+          </div>
+
+          {/* DEBATE TRANSCRIPT TURNS */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            {autopsyDebateTurns.map((turn, idx) => {
+              const isJudge = turn.role === 'JUDGE';
+              const isPros = turn.role === 'PROSECUTION';
+              const clr = isPros ? '#EF4444' : isJudge ? '#F59E0B' : '#10B981';
+              const isCurrent = isDebatePlaying && activeDebateSpeaker === idx;
+
+              return (
+                <div
+                  key={turn.step}
+                  ref={el => { debateTurnRefs.current[idx] = el; }}
+                  style={{
+                    backgroundColor: '#0F172A',
+                    borderTop: `1px solid ${isCurrent ? clr : '#1E293B'}`,
+                    borderRight: `1px solid ${isCurrent ? clr : '#1E293B'}`,
+                    borderBottom: `1px solid ${isCurrent ? clr : '#1E293B'}`,
+                    borderLeft: `5px solid ${clr}`,
+                    borderRadius: '0 10px 10px 0',
+                    padding: '18px 22px',
+                    boxShadow: isCurrent ? `0 0 22px ${clr}33` : '0 4px 12px rgba(0,0,0,0.3)',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <strong style={{ fontSize: '0.92rem', color: clr, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        {isJudge && <Award size={15} />}
+                        {isPros && <ShieldAlert size={15} />}
+                        {!isJudge && !isPros && <ShieldCheck size={15} />}
+                        {turn.speaker}
+                      </strong>
+                      <span style={{
+                        fontSize: '0.66rem',
+                        fontWeight: 700,
+                        padding: '1px 6px',
+                        borderRadius: '4px',
+                        backgroundColor: `${clr}22`,
+                        color: clr,
+                        border: `1px solid ${clr}44`
+                      }}>
+                        {turn.persona}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <button
+                        onClick={() => {
+                          setDebateStep(idx);
+                          setIsDebatePlaying(true);
+                          speakDebateTurn(idx, false);
+                        }}
+                        style={{
+                          backgroundColor: '#1E293B',
+                          border: '1px solid #334155',
+                          borderRadius: '4px',
+                          color: '#94A3B8',
+                          padding: '3px 8px',
+                          fontSize: '0.72rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <Volume2 size={13} />
+                        Listen
+                      </button>
+                      <span style={{ fontSize: '0.74rem', color: '#64748B', fontFamily: 'monospace' }}>
+                        {turn.time}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div style={{
+                    fontSize: '0.88rem',
+                    color: isJudge ? '#FEF08A' : '#E2E8F0',
+                    lineHeight: '1.6',
+                    marginTop: '4px'
+                  }}>
+                    {turn.statement}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
         </div>
       )}
 
