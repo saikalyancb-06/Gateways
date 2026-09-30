@@ -9,7 +9,7 @@ import {
   BarChart3, HelpCircle, Printer, Download, Copy, Check,
   Database, Compass, AlertTriangle
 } from 'lucide-react';
-import type { AgentInfo, AgentMessage, Claim, Source, CourtSimulation } from './types';
+import type { AgentInfo, AgentMessage, Claim, Source, CourtSimulation, AppTab } from './types';
 import { EvidenceGraph } from './EvidenceGraph';
 import { ResearchReplay } from './ResearchReplay';
 import { CounterfactualLab } from './CounterfactualLab';
@@ -18,7 +18,7 @@ import { ResearchMemory } from './ResearchMemory';
 import { AutonomousPlanner } from './AutonomousPlanner';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'planner' | 'workflow' | 'report' | 'claims' | 'court' | 'graph' | 'replay' | 'lab' | 'autopsy' | 'memory'>('planner');
+  const [activeTab, setActiveTab] = useState<AppTab>('planner');
   const [mode, setMode] = useState<'LIVE' | 'DEMO'>('LIVE');
   const [provider, setProvider] = useState<'local' | 'groq'>('groq');
   const [isReplanned, setIsReplanned] = useState(false);
@@ -951,7 +951,17 @@ export default function App() {
                       </div>
 
                       {/* What Would Change Our Mind? (Falsification Criteria) - Vibrant & High Contrast */}
-                      <div style={{ marginBottom: '14px', backgroundColor: '#EFF6FF', border: '1.5px solid #3B82F6', borderLeft: '5px solid #2563EB', padding: '12px 16px', borderRadius: '0 8px 8px 0', boxShadow: '0 2px 8px rgba(37,99,235,0.08)' }}>
+                      <div style={{
+                        marginBottom: '14px',
+                        backgroundColor: '#EFF6FF',
+                        borderTop: '1.5px solid #3B82F6',
+                        borderRight: '1.5px solid #3B82F6',
+                        borderBottom: '1.5px solid #3B82F6',
+                        borderLeft: '5px solid #2563EB',
+                        padding: '12px 16px',
+                        borderRadius: '0 8px 8px 0',
+                        boxShadow: '0 2px 8px rgba(37,99,235,0.08)'
+                      }}>
                         <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#1D4ED8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <HelpCircle size={15} color="#2563EB" /> What Would Change Our Mind? (Falsification Criteria)
                         </div>
@@ -1090,11 +1100,12 @@ export default function App() {
                       key={i} 
                       style={{ 
                         backgroundColor: '#0F172A', 
+                        borderTop: '1px solid #1E293B',
+                        borderRight: '1px solid #1E293B',
+                        borderBottom: '1px solid #1E293B',
                         borderLeft: `5px solid ${clr}`, 
                         borderRadius: '0 10px 10px 0', 
                         padding: '18px 24px', 
-                        border: '1px solid #1E293B', 
-                        borderLeftWidth: '5px',
                         boxShadow: isJudge && i === courtData.dialogue.length - 1 ? '0 0 20px rgba(245, 158, 11, 0.2)' : '0 4px 12px rgba(0,0,0,0.3)',
                         transition: 'all 0.3s ease'
                       }}

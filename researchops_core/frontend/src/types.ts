@@ -95,3 +95,16 @@ export interface CourtSimulation {
   ruling?: string;
   status: string;
 }
+
+export type AppTab =
+  | 'planner'
+  | 'workflow'
+  | 'report'
+  | 'claims'
+  | 'court'
+  | 'graph'
+  | 'replay'
+  | 'lab'
+  | 'autopsy'
+  | 'memory';
+

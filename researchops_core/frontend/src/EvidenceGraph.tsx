@@ -4,7 +4,7 @@ import {
   Search, ZoomIn, ZoomOut, Maximize2,
   Users, Layers, Sparkles, ArrowRight
 } from 'lucide-react';
-import type { Claim, Source, AgentInfo, AgentMessage } from './types';
+import type { Claim, Source, AgentInfo, AgentMessage, AppTab } from './types';
 
 export interface EvidenceGraphProps {
   claims: Claim[];
@@ -12,7 +12,7 @@ export interface EvidenceGraphProps {
   question?: string;
   agents?: AgentInfo[];
   messages?: AgentMessage[];
-  onNavigateTab?: (tab: 'workflow' | 'report' | 'claims' | 'court' | 'graph' | 'replay' | 'lab') => void;
+  onNavigateTab?: (tab: AppTab) => void;
 }
 
 // ── Graph Data Model Interfaces ──

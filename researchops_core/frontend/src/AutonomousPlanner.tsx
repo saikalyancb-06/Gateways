@@ -4,7 +4,7 @@ import {
   GitMerge, Search,
   Terminal, FastForward, Activity
 } from 'lucide-react';
-import type { Claim, Source, AgentInfo } from './types';
+import type { Claim, Source, AgentInfo, AppTab } from './types';
 import type {
   PlannerSessionState,
   TaskStatus,
@@ -17,7 +17,7 @@ interface AutonomousPlannerProps {
   claims?: Claim[];
   sources?: Source[];
   agents?: AgentInfo[];
-  onNavigateTab?: (tab: 'workflow' | 'report' | 'claims' | 'court' | 'graph' | 'replay' | 'lab' | 'autopsy' | 'memory') => void;
+  onNavigateTab?: (tab: AppTab) => void;
   onTraceInGraph?: (claimId: string) => void;
 }
 
@@ -421,7 +421,9 @@ export function AutonomousPlanner({
                     onClick={() => setSelectedTaskId(t.task_id)}
                     style={{
                       backgroundColor: isSel ? '#1E293B' : '#0F172A',
-                      border: `1.5px solid ${isSel ? '#38BDF8' : '#1E293B'}`,
+                      borderTop: `1.5px solid ${isSel ? '#38BDF8' : '#1E293B'}`,
+                      borderRight: `1.5px solid ${isSel ? '#38BDF8' : '#1E293B'}`,
+                      borderBottom: `1.5px solid ${isSel ? '#38BDF8' : '#1E293B'}`,
                       borderLeft: `5px solid ${sc.border}`,
                       borderRadius: '8px',
                       padding: '14px 16px',
@@ -632,7 +634,10 @@ export function AutonomousPlanner({
               <div
                 key={u.uncertainty_id}
                 style={{
-                  backgroundColor: '#0F172A', border: '1.5px solid #1E293B',
+                  backgroundColor: '#0F172A',
+                  borderTop: '1.5px solid #1E293B',
+                  borderRight: '1.5px solid #1E293B',
+                  borderBottom: '1.5px solid #1E293B',
                   borderLeft: `5px solid ${u.severity === 'CRITICAL' ? '#EF4444' : u.severity === 'HIGH' ? '#F59E0B' : '#3B82F6'}`,
                   borderRadius: '0 8px 8px 0', padding: '18px 22px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                 }}

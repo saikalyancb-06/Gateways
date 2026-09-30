@@ -5,7 +5,7 @@ import {
   ShieldAlert, BookOpen, HelpCircle,
   ExternalLink, ChevronRight, Building
 } from 'lucide-react';
-import type { Claim } from './types';
+import type { Claim, AppTab } from './types';
 import type {
   ResearchMemoryPayload,
   CrossResearchProject,
@@ -17,7 +17,7 @@ import type {
 interface ResearchMemoryProps {
   question?: string;
   currentClaims?: Claim[];
-  onNavigateTab?: (tab: 'workflow' | 'report' | 'claims' | 'court' | 'graph' | 'replay' | 'lab' | 'autopsy' | 'planner' | 'memory') => void;
+  onNavigateTab?: (tab: AppTab) => void;
 }
 
 export function ResearchMemory({
@@ -621,7 +621,9 @@ export function ResearchMemory({
                   style={{
                     padding: '16px',
                     backgroundColor: isSel ? '#1E293B' : '#0F172A',
-                    border: `1px solid ${isSel ? '#38BDF8' : '#1E293B'}`,
+                    borderTop: `1px solid ${isSel ? '#38BDF8' : '#1E293B'}`,
+                    borderRight: `1px solid ${isSel ? '#38BDF8' : '#1E293B'}`,
+                    borderBottom: `1px solid ${isSel ? '#38BDF8' : '#1E293B'}`,
                     borderLeft: `4px solid ${isSel ? '#38BDF8' : '#334155'}`,
                     borderRadius: '8px',
                     cursor: 'pointer',
@@ -734,7 +736,9 @@ export function ResearchMemory({
                   style={{
                     padding: '14px 16px',
                     backgroundColor: isSel ? '#1E293B' : '#0F172A',
-                    border: `1px solid ${isSel ? '#38BDF8' : '#1E293B'}`,
+                    borderTop: `1px solid ${isSel ? '#38BDF8' : '#1E293B'}`,
+                    borderRight: `1px solid ${isSel ? '#38BDF8' : '#1E293B'}`,
+                    borderBottom: `1px solid ${isSel ? '#38BDF8' : '#1E293B'}`,
                     borderLeft: `4px solid ${isSel ? '#38BDF8' : '#334155'}`,
                     borderRadius: '8px',
                     cursor: 'pointer',
@@ -854,7 +858,9 @@ export function ResearchMemory({
                   style={{
                     padding: '16px',
                     backgroundColor: isSel ? '#1E293B' : '#0F172A',
-                    border: `1px solid ${isSel ? '#38BDF8' : '#1E293B'}`,
+                    borderTop: `1px solid ${isSel ? '#38BDF8' : '#1E293B'}`,
+                    borderRight: `1px solid ${isSel ? '#38BDF8' : '#1E293B'}`,
+                    borderBottom: `1px solid ${isSel ? '#38BDF8' : '#1E293B'}`,
                     borderLeft: `4px solid ${isSel ? '#38BDF8' : '#334155'}`,
                     borderRadius: '8px',
                     cursor: 'pointer',
@@ -1179,7 +1185,9 @@ export function ResearchMemory({
               key={q.id}
               style={{
                 backgroundColor: '#0F172A',
-                border: '1px solid #1E293B',
+                borderTop: '1px solid #1E293B',
+                borderRight: '1px solid #1E293B',
+                borderBottom: '1px solid #1E293B',
                 borderLeft: `4px solid ${q.severity === 'CRITICAL' ? '#EF4444' : '#F59E0B'}`,
                 borderRadius: '8px',
                 padding: '16px'

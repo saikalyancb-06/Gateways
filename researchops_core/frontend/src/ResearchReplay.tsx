@@ -289,7 +289,9 @@ export function ResearchReplay({ liveMessages = [] }: ResearchReplayProps) {
                   onClick={() => setCurrentStep(ev.step)}
                   style={{
                     backgroundColor: isSelected ? '#131F37' : '#0B1324',
-                    border: `1.5px solid ${isSelected ? '#38BDF8' : isPassed ? '#1E293B' : '#131D31'}`,
+                    borderTop: `1.5px solid ${isSelected ? '#38BDF8' : isPassed ? '#1E293B' : '#131D31'}`,
+                    borderRight: `1.5px solid ${isSelected ? '#38BDF8' : isPassed ? '#1E293B' : '#131D31'}`,
+                    borderBottom: `1.5px solid ${isSelected ? '#38BDF8' : isPassed ? '#1E293B' : '#131D31'}`,
                     borderLeft: `5px solid ${meta.color}`,
                     borderRadius: '0 10px 10px 0',
                     padding: '16px 20px',

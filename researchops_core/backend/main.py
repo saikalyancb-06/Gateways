@@ -74,8 +74,13 @@ async def start_research(req: StartResearchRequest):
     # Event broadcast handler
     def broadcast_event(evt: Dict[str, Any]):
         sockets = ACTIVE_SOCKETS.get(session.id, [])
-        for ws in sockets:
-            asyncio.create_task(ws.send_text(json.dumps(evt)))
+        for ws in list(sockets):
+            async def _safe_send(w, payload):
+                try:
+                    await w.send_text(json.dumps(payload))
+                except Exception:
+                    pass
+            asyncio.create_task(_safe_send(ws, evt))
             
     orch = ResearchOrchestrator(session, event_emitter=broadcast_event)
     ACTIVE_ORCHESTRATORS[session.id] = orch

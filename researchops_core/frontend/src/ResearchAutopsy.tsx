@@ -5,7 +5,7 @@ import {
   Sparkles, History, Users, Check,
   Sliders, Play, Info, Terminal, BookOpen, Network
 } from 'lucide-react';
-import type { Claim, Source, AgentInfo, AgentMessage } from './types';
+import type { Claim, Source, AgentInfo, AgentMessage, AppTab } from './types';
 import type {
   ResearchAutopsySession,
   AutopsyFinding,
@@ -21,7 +21,7 @@ interface ResearchAutopsyProps {
   messages?: AgentMessage[];
   finalReport?: string;
   onTraceInGraph?: (claimId: string) => void;
-  onNavigateTab?: (tab: 'workflow' | 'report' | 'claims' | 'court' | 'graph' | 'replay' | 'lab' | 'autopsy' | 'memory') => void;
+  onNavigateTab?: (tab: AppTab) => void;
 }
 
 export function ResearchAutopsy({
@@ -510,7 +510,9 @@ export function ResearchAutopsy({
                     onClick={() => setSelectedFindingId(f.finding_id)}
                     style={{
                       backgroundColor: isSel ? '#1E293B' : '#0F172A',
-                      border: `1.5px solid ${isSel ? '#38BDF8' : '#1E293B'}`,
+                      borderTop: `1.5px solid ${isSel ? '#38BDF8' : '#1E293B'}`,
+                      borderRight: `1.5px solid ${isSel ? '#38BDF8' : '#1E293B'}`,
+                      borderBottom: `1.5px solid ${isSel ? '#38BDF8' : '#1E293B'}`,
                       borderLeft: `5px solid ${badge.border}`,
                       borderRadius: '8px',
                       padding: '14px 16px',

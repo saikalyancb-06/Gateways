@@ -710,7 +710,9 @@ export function CounterfactualLab({ baselineQuestion }: CounterfactualLabProps) 
                   key={idx}
                   style={{
                     backgroundColor: '#131D31',
-                    border: '1px solid #1E293B',
+                    borderTop: '1px solid #1E293B',
+                    borderRight: '1px solid #1E293B',
+                    borderBottom: '1px solid #1E293B',
                     borderLeft: `4px solid ${isPos ? '#10B981' : isNeg ? '#EF4444' : '#F59E0B'}`,
                     borderRadius: '0 6px 6px 0',
                     padding: '12px 16px',
