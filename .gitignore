@@ -1,0 +1,185 @@
+# ==============================================================================
+# ResearchOps / Multi-Agent Research System - .gitignore
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Environment Variables & Credentials (CRITICAL - NEVER COMMIT)
+# ------------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.env
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+secrets.json
+credentials.json
+token.json
+service_account.json
+
+# ------------------------------------------------------------------------------
+# 2. Python & Virtual Environments
+# ------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+*.so
+
+# Environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.env/
+
+# Packaging & Distribution
+build/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+dmypy.json
+
+# ------------------------------------------------------------------------------
+# 3. Node.js & Frontend (Vite / React / TypeScript)
+# ------------------------------------------------------------------------------
+node_modules/
+frontend/node_modules/
+researchops_core/frontend/node_modules/
+dist/
+frontend/dist/
+researchops_core/frontend/dist/
+dist-ssr/
+build/
+.cache/
+.vite/
+frontend/.vite/
+researchops_core/frontend/.vite/
+.eslintcache
+*.tsbuildinfo
+
+# Package manager logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ------------------------------------------------------------------------------
+# 4. Databases, Local Storage & Sessions
+# ------------------------------------------------------------------------------
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.rdb
+
+# ------------------------------------------------------------------------------
+# 5. Large Datasets & Storage (Raw data / Parquet)
+# ------------------------------------------------------------------------------
+data/raw/
+data/processed/
+data/external/
+*.tar.gz
+*.tar
+*.zip
+*.7z
+*.rar
+*.parquet
+*.arrow
+*.ipc
+*.h5
+*.hdf5
+*.csv.gz
+
+# ------------------------------------------------------------------------------
+# 6. Model Weights & Binary Checkpoints
+# ------------------------------------------------------------------------------
+*.pt
+*.pth
+*.bin
+*.onnx
+*.safetensors
+*.ckpt
+*.tflite
+models/checkpoints/
+models/onnx/
+browser-extension/public/models/*.onnx
+!demo/public/models/*.onnx
+
+# ------------------------------------------------------------------------------
+# 7. Browser Automation & Profiles (Playwright / Puppeteer / Chrome)
+# ------------------------------------------------------------------------------
+user_data/
+chrome-user-data/
+.playwright/
+playwright-report/
+test-results/
+
+# ------------------------------------------------------------------------------
+# 8. Logs, Dumps & Scratch Files
+# ------------------------------------------------------------------------------
+logs/
+*.log
+runs/
+*.tmp
+*.temp
+*.bak
+prompt_*.txt
+scratch/
+
+# ------------------------------------------------------------------------------
+# 9. IDE & OS Metadata
+# ------------------------------------------------------------------------------
+# Windows
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Editors
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*.swn
+*~
